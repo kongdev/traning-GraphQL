@@ -3,9 +3,34 @@ const {
 	GraphQLString,
 	GraphQLSchema,
 	GraphQLList,
-	GraphQLInt
+	GraphQLInt,
+	GraphQLID
 } = require("graphql");
-const { Post } = require("./models");
+const { Post, User } = require("./models");
+Thunk: () => {};
+
+const UserType = new GraphQLObjectType({
+	name: "User",
+	fields: () => ({
+		id: {
+			type: GraphQLID,
+			resolve: user => {
+				return user._id;
+			}
+		},
+		username: {
+			type: GraphQLString
+		},
+		posts: {
+			type: new GraphQLList(PostType),
+			resolve: async user => {
+				const posts = await Post.find({ authorId: user._id });
+				return posts;
+			}
+		}
+	})
+});
+
 const PostType = new GraphQLObjectType({
 	name: "Post",
 	fields: {
@@ -16,6 +41,22 @@ const PostType = new GraphQLObjectType({
 			type: GraphQLInt,
 			resolve: obj => {
 				return obj.title.length;
+			}
+		},
+		id: {
+			type: GraphQLID
+		},
+		tags: {
+			type: new GraphQLList(GraphQLString)
+		},
+		content: {
+			type: GraphQLString
+		},
+		author: {
+			type: UserType,
+			resolve: async post => {
+				const user = await User.findById(post.authorId);
+				return user;
 			}
 		}
 	}
@@ -28,6 +69,23 @@ const QueryType = new GraphQLObjectType({
 			resolve: async () => {
 				const posts = await Post.find();
 				return posts;
+			}
+		},
+		post: {
+			type: PostType,
+			args: {
+				id: { type: GraphQLID }
+			},
+			resolve: async (obj, args) => {
+				const post = await Post.findOne({ _id: args.id });
+				return post;
+			}
+		},
+		users: {
+			type: new GraphQLList(UserType),
+			resolve: async () => {
+				const users = await User.find();
+				return users;
 			}
 		}
 	}
