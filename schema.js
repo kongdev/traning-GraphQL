@@ -1,4 +1,4 @@
-const {
+/*const {
 	GraphQLObjectType,
 	GraphQLString,
 	GraphQLSchema,
@@ -7,7 +7,6 @@ const {
 	GraphQLID
 } = require("graphql");
 const { Post, User } = require("./models");
-Thunk: () => {};
 
 const UserType = new GraphQLObjectType({
 	name: "User",
@@ -24,8 +23,8 @@ const UserType = new GraphQLObjectType({
 		posts: {
 			type: new GraphQLList(PostType),
 			resolve: async user => {
-				const posts = await Post.find({ authorId: user._id });
-				return posts;
+				const users = await Post.find({ authorId: user._id });
+				return users;
 			}
 		}
 	})
@@ -90,7 +89,20 @@ const QueryType = new GraphQLObjectType({
 		}
 	}
 });
+*/
+//const schema = new GraphQLSchema({ query: QueryType });
+//module.exports = schema;
 
-const schema = new GraphQLSchema({ query: QueryType });
+const { makeExecutableSchema } = require("graphql-tools");
+const fs = require("fs");
+const path = require("path");
 
-module.exports = schema;
+const typeDefsPath = path.join(__dirname, "graphql", "typedefs.graphql");
+const typeDefs = fs.readFileSync(typeDefsPath).toString();
+
+const resolvers = require("./graphql/resolvers");
+
+module.exports = makeExecutableSchema({
+	typeDefs,
+	resolvers
+});

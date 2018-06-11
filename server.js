@@ -7,15 +7,9 @@ const tagRouter = require("./routes/tagRouter");
 const { User } = require("./models");
 const { authMiddleware } = require("./libs/auth");
 const graphqlHTTP = require("express-graphql");
+const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
 const schema = require("./schema");
 app.use(morgan("dev"));
-app.use(
-	"/graphql",
-	graphqlHTTP({
-		schema: schema,
-		graphiql: true
-	})
-);
 
 app.use(
 	bodyParser.urlencoded({
@@ -24,6 +18,38 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use(authMiddleware);
+
+app.use(
+	"/graphql",
+	graphqlExpress((req, res) => {
+		return {
+			schema: schema,
+			context: {
+				user: req.user
+			}
+		};
+	})
+);
+/*app.use(
+	"/graphql",
+	graphqlExpress({
+		schema: schema,
+		context: {
+			user: {
+				_id: 1,
+				username: "test"
+			}
+		}
+	})
+);*/
+
+app.use(
+	"/graphiql",
+	graphiqlExpress({
+		endpointURL: "/graphql"
+	})
+);
+
 app.use("/posts", postRouter);
 app.use("/tags", tagRouter);
 app.post("/signup", async (req, res) => {
@@ -63,6 +89,6 @@ app.get("/me", async (req, res) => {
 	res.send(req.user);
 });
 
-app.listen(5555, () => {
-	console.log(" hi port 5555");
+app.listen(3000, () => {
+	console.log(" hi port 3000");
 });

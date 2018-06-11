@@ -6,6 +6,7 @@ const authMiddleware = async (req, res, next) => {
 
 	if (user) {
 		req.user = user;
+		//console.log("user:", user);
 	}
 	next();
 };
