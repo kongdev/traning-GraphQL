@@ -9,6 +9,10 @@ const { authMiddleware } = require("./libs/auth");
 const graphqlHTTP = require("express-graphql");
 const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
 const schema = require("./schema");
+const dataLoader = require("dataloader")
+
+const {createUserLoader,createPostByUserIdLoader} = require('./loaders')
+
 app.use(morgan("dev"));
 
 app.use(
@@ -19,15 +23,18 @@ app.use(
 app.use(bodyParser.json());
 app.use(authMiddleware);
 
-app.use(
-	"/graphql",
-	graphqlExpress((req, res) => {
-		return {
-			schema: schema,
-			context: {
-				user: req.user
-			}
-		};
+app.use("/graphql",graphqlExpress((req, res) => {
+
+	return {
+		schema: schema,
+		context: {
+			loaders : {
+				userLoader : createUserLoader(),
+				postByUserIdLoader:createPostByUserIdLoader()
+			},
+			user: req.user
+		}
+	};
 	})
 );
 /*app.use(
